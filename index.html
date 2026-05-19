@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actividad de Ángulos</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+        body { font-family: 'DM Sans', sans-serif; }
+        .angle-canvas { touch-action: none; }
+    </style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/resizing_sdk.js" type="text/javascript"></script>
+ </head>
+ <body data-template-id="__page-root" class="min-h-screen flex flex-col items-center justify-center p-6" style="background: rgb(15, 23, 42);">
+  <main class="w-full max-w-md text-center space-y-6">
+   <h1 data-template-id="title" class="canva-text font-bold" style="color: rgb(248, 250, 252); font-weight: 700; font-style: normal; font-size: 28px;">Actividad de Ángulos</h1>
+   <div class="relative w-72 h-72 mx-auto">
+    <canvas id="angle-canvas" class="angle-canvas w-72 h-72 cursor-pointer" width="288" height="288"></canvas>
+   </div>
+   <div class="space-y-2">
+    <p id="degree-display" data-template-id="degree-label" class="canva-text text-5xl font-bold" style="color: rgb(249, 115, 22); font-weight: 700;"></p>
+    <p id="type-display" data-template-id="type-label" class="canva-text text-xl font-medium" style="color: rgb(203, 213, 225); font-weight: 500;"></p>
+   </div><button data-template-id="reset-btn" class="canva-button px-6 py-2 rounded-full font-medium" onclick="resetAngle()" style="background: rgb(249, 115, 22); color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Reiniciar</button>
+  </main>
+  <script src="/_sdk/editing_sdk.js"></script>
+  <script>
+        const canvas = document.getElementById('angle-canvas');
+        const ctx = canvas.getContext('2d');
+        let currentAngle = 45;
+        let dragging = false;
+
+        function getAngleType(deg) {
+            if (deg === 0) return 'Cero';
+            if (deg < 90) return 'Agudo';
+            if (deg === 90) return 'Recto';
+            if (deg < 180) return 'Obtuso';
+            if (deg === 180) return 'Llano';
+            return 'Reflejo';
+        }
+
+        function draw() {
+            const w = canvas.width, h = canvas.height;
+            const cx = w / 2, cy = h / 2, r = 110;
+            ctx.clearRect(0, 0, w, h);
+
+            // Arc
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, r, 0, -currentAngle * Math.PI / 180, true);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(251, 146, 60, 0.25)';
+            ctx.fill();
+            ctx.strokeStyle = '#f97316';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Base line
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + r + 20, cy);
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Angle line
+            const rad = -currentAngle * Math.PI / 180;
+            const ex = cx + (r + 20) * Math.cos(rad);
+            const ey = cy + (r + 20) * Math.sin(rad);
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(ex, ey);
+            ctx.strokeStyle = '#f97316';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Handle
+            const hx = cx + r * Math.cos(rad);
+            const hy = cy + r * Math.sin(rad);
+            ctx.beginPath();
+            ctx.arc(hx, hy, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#f97316';
+            ctx.fill();
+
+            // Center dot
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#1e293b';
+            ctx.fill();
+
+            document.getElementById('degree-display').textContent = Math.round(currentAngle) + '°';
+            document.getElementById('type-display').textContent = getAngleType(Math.round(currentAngle));
+        }
+
+        function getAngleFromEvent(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left - canvas.width / 2;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top - canvas.height / 2;
+            let angle = -Math.atan2(y, x) * 180 / Math.PI;
+            if (angle < 0) angle += 360;
+            return Math.min(360, Math.max(0, angle));
+        }
+
+        canvas.addEventListener('mousedown', () => dragging = true);
+        canvas.addEventListener('touchstart', () => dragging = true);
+        window.addEventListener('mouseup', () => dragging = false);
+        window.addEventListener('touchend', () => dragging = false);
+        canvas.addEventListener('mousemove', e => { if (dragging) { currentAngle = getAngleFromEvent(e); draw(); } });
+        canvas.addEventListener('touchmove', e => { if (dragging) { e.preventDefault(); currentAngle = getAngleFromEvent(e); draw(); } });
+        canvas.addEventListener('click', e => { currentAngle = getAngleFromEvent(e); draw(); });
+
+        function resetAngle() { currentAngle = 45; draw(); }
+
+        draw();
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9fe6dc35446ab290',t:'MTc3OTIzMzExOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body></html>
